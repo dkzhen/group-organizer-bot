@@ -4,6 +4,10 @@ import { startBot } from "./commands/start.js";
 import { bot } from "./provider/TelegramBot.js";
 import { prisma } from "./provider/PrismaClient.js";
 import { envTELEGRAM_BOT_TOKEN } from "./config/env.js";
+import express from "express";
+
+const app = express();
+const port = 101;
 
 // Buat aturan jadwal dengan waktu 12 malam UTC+7
 const jadwal = "00 00 * * *"; // '0 0 17 * * *' artinya jam 17:00 UTC, yang setara dengan 12 malam WIB
@@ -60,3 +64,7 @@ const job = scheduleJob.scheduleJob(jadwal, function () {
 
 // Tampilkan pesan bahwa jadwal telah dibuat
 console.log("Jadwal telah dibuat pada:", job.nextInvocation());
+
+app.listen(port, () => {
+  console.log(`Server berjalan di http://localhost:${port}`);
+});

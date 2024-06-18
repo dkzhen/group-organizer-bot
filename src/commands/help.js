@@ -92,17 +92,19 @@ bot.on("callback_query", async (query) => {
         where: { chatId: chatId.toString() },
       });
       if (data.length > 0) {
+        const buttons = data.map((item) => ({
+          text: item.message,
+          callback_data: item.id.toString(),
+        }));
+
+        // Mengelompokkan tombol menjadi baris-baris dengan 3 tombol per baris
+        const inlineKeyboard = groupButtons(buttons, 4);
+
         const opts = {
           reply_markup: {
-            inline_keyboard: [
-              data.map((item) => ({
-                text: item.message,
-                callback_data: item.id.toString(),
-              })),
-            ],
+            inline_keyboard: inlineKeyboard,
           },
         };
-
         bot.sendMessage(chatId, "Pilih salah satu untuk dihapus:", opts);
       } else {
         bot.sendMessage(chatId, "Tidak ada reminder yang ditemukan");
@@ -197,4 +199,12 @@ bot.on("callback_query", async (query) => {
     });
   }
 });
+
+function groupButtons(buttons, buttonsPerRow) {
+  const rows = [];
+  for (let i = 0; i < buttons.length; i += buttonsPerRow) {
+    rows.push(buttons.slice(i, i + buttonsPerRow));
+  }
+  return rows;
+}
 export { bot as helpBot };
