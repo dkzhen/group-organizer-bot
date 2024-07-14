@@ -35,13 +35,12 @@ exports.listBot = async () => {
     const callbackData = query.data;
     if (callbackData.startsWith("bot_")) {
       const botId = callbackData.split("_")[1];
-      console.log("botIdddd", botId);
-      const botDetails = await prisma.bot.findFirst({
+      const botDetails = await prisma.bot.findUnique({
         where: {
           id: botId,
         },
       });
-      console.log("botdetaill", botDetails);
+
       bot.sendMessage(chatId, `Please enter your token:`);
       const idToken = await prisma.token.create({
         data: { botId: botDetails.id, telegramId: chatId },
