@@ -1,10 +1,9 @@
-import { config } from "dotenv";
-
+const dotenv = require("dotenv");
 // Configure dotenv
-config();
+dotenv.config();
 
 // Access your environment variable
 const envTELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-const envAPI_KEY_GOOGLE = process.env.API_KEY_GOOGLE;
+const envPORT = process.env.PORT;
 
-export { envTELEGRAM_BOT_TOKEN, envAPI_KEY_GOOGLE };
+module.exports = { envTELEGRAM_BOT_TOKEN, envPORT };
