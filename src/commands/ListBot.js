@@ -47,7 +47,7 @@ exports.listBot = async () => {
         if (botDetails) {
           await bot.sendMessage(chatId, "Please enter your token:");
           const idToken = await prisma.token.create({
-            data: { botId: botDetails.id, telegramId: chatId },
+            data: { botId: botDetails.id },
           });
 
           bot.sessions[chatId] = { botId, tokenId: idToken.id };
@@ -71,7 +71,7 @@ exports.listBot = async () => {
         if (!text.startsWith("/")) {
           await prisma.token.update({
             where: { id: tokenId },
-            data: { token: text },
+            data: { token: text, telegramId: chatId },
           });
 
           // Clear any tokens that are still null
