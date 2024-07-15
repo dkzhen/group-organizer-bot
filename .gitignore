@@ -4,3 +4,5 @@ node_modules
 credentials.json
 token.json
 yarn-error.logss
+
+prisma/migrations

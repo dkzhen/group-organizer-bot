@@ -22,7 +22,7 @@ model Bot {
 model Token {
   id         Int     @id @default(autoincrement())
   Bot        Bot?    @relation(fields: [botId], references: [id])
-  telegramId Int?
+  telegramId BigInt?
   botId      String?
   token      String? @db.Text
 }
