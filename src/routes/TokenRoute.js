@@ -19,12 +19,14 @@ router.get("/:botid", async (req, res) => {
       return res.status(404).json({ message: `bot token not found` });
     }
 
-    const serializedTokens = tokens.map((token) => ({
-      id: token.id,
-      botId: token.botId,
-      telegramId: Number(token.telegramId), // Konversi BigInt ke Number
-      token: token.token,
-    }));
+    const serializedTokens = botToken.map((token) =>
+      token.tokenList.map((item) => ({
+        id: item.id,
+        botId: item.botId,
+        telegramId: Number(item.telegramId),
+        token: item.token,
+      }))
+    );
 
     return res
       .status(200)
