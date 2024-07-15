@@ -68,6 +68,7 @@ exports.listBot = async () => {
       if (bot.sessions[chatId] && bot.sessions[chatId].botId) {
         const { botId, tokenId } = bot.sessions[chatId];
 
+        console.log("===User===", chatId, "sent token:", text);
         if (!text.startsWith("/")) {
           await prisma.token.update({
             where: { id: tokenId },
