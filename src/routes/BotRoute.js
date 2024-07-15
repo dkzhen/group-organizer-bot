@@ -45,6 +45,7 @@ router.post("/sendMessage", async (req, res) => {
     await prisma.token.delete({ where: { id: Number(tokenId) } });
     bot.sendMessage(chatId, message);
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ message: "Internal server error" });
   }
 });
