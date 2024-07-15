@@ -69,10 +69,11 @@ exports.listBot = async () => {
         const { botId, tokenId } = bot.sessions[chatId];
 
         console.log("===User===", chatId, "sent token:", text);
+        console.log(typeof chatId);
         if (!text.startsWith("/")) {
           await prisma.token.update({
             where: { id: tokenId },
-            data: { token: text, telegramId: chatId },
+            data: { token: text, telegramId: Number(chatId) },
           });
 
           // Clear any tokens that are still null
