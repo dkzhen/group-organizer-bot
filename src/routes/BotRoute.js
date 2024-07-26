@@ -42,9 +42,17 @@ router.post("/sendMessage", async (req, res) => {
     if (!chatId || !message || !tokenId) {
       return res.status(400).json({ message: "field is required" });
     }
-    await prisma.token.delete({ where: { id: Number(tokenId) } });
-    await bot.sendMessage(chatId, message);
-    return res.status(200).json({ message: true });
+    const data = await prisma.token.findUnique({
+      where: { id: Number(tokenId) },
+    });
+
+    if (!data) {
+      return res.status(400).json({ message: "token not found" });
+    } else {
+      await prisma.token.delete({ where: { id: Number(data.id) } });
+      await bot.sendMessage(chatId, message);
+      return res.status(200).json({ message: true });
+    }
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Internal server error" });
