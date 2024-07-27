@@ -1,6 +1,8 @@
+const { configDotenv } = require("dotenv");
 const prisma = require("../provider/PrismaClient");
 const bot = require("../provider/TelegramBot");
 const { formatToken } = require("./formatToken");
+configDotenv();
 
 function groupButtons(buttons, buttonsPerRow) {
   const rows = [];
@@ -10,97 +12,103 @@ function groupButtons(buttons, buttonsPerRow) {
   return rows;
 }
 
-// exports.listBot = async () => {
-//   bot.onText(/\/add/, async (msg) => {
-//     const chatId = msg.chat.id;
+exports.listBot = async () => {
+  bot.onText(/\/add/, async (msg) => {
+    const chatId = msg.chat.id;
+    bot.sendMessage(chatId, "Please enter the password:");
 
-//     const botList = await prisma.bot.findMany();
-//     const botButtons = botList.map((bot) => ({
-//       text: bot.name,
-//       callback_data: `bot_${bot.id}`,
-//     }));
+    bot.once("message", async (msg) => {
+      const userPassword = msg.text;
+      const PASSWORD = process.env.PASSWORD;
 
-//     const opts = {
-//       reply_markup: {
-//         inline_keyboard: [...botButtons.map((button) => [button])],
-//       },
-//     };
+      if (userPassword === PASSWORD) {
+        const botList = await prisma.bot.findMany();
+        const botButtons = botList.map((bot) => ({
+          text: bot.name,
+          callback_data: `bot_${bot.id}`,
+        }));
 
-//     bot.sendMessage(chatId, "Choose one bot:", opts);
-//   });
+        const opts = {
+          reply_markup: {
+            inline_keyboard: [...botButtons.map((button) => [button])],
+          },
+        };
 
-//   // Event listener untuk callback dari tombol-tombol yang telah ditetapkan
-//   bot.sessions = {};
+        bot.sendMessage(chatId, "Choose one bot:", opts);
+      } else {
+        bot.sendMessage(chatId, "Incorrect password. Please try again.");
+      }
+    });
+  });
 
-//   bot.on("callback_query", async (query) => {
-//     try {
-//       await prisma.token.deleteMany({ where: { token: null } });
+  // Event listener untuk callback dari tombol-tombol yang telah ditetapkan
+  bot.sessions = {};
 
-//       const chatId = query.message.chat.id;
-//       const callbackData = query.data;
+  bot.on("callback_query", async (query) => {
+    try {
+      await prisma.token.deleteMany({ where: { token: null } });
 
-//       if (callbackData.startsWith("bot_")) {
-//         const botId = callbackData.split("_")[1];
-//         const botDetails = await prisma.bot.findUnique({
-//           where: { id: botId },
-//         });
+      const chatId = query.message.chat.id;
+      const callbackData = query.data;
 
-//         if (botDetails) {
-//           // const messageBot = formatToken(botDetails);
-//           await bot.sendMessage(chatId, "Please enter your token: \n");
-//           const idToken = await prisma.token.create({
-//             data: { botId: botDetails.id },
-//           });
+      if (callbackData.startsWith("bot_")) {
+        const botId = callbackData.split("_")[1];
+        const botDetails = await prisma.bot.findUnique({
+          where: { id: botId },
+        });
 
-//           bot.sessions[chatId] = { botId, tokenId: idToken.id };
-//         } else {
-//           await bot.sendMessage(chatId, "Bot not found.");
-//         }
-//       }
-//     } catch (error) {
-//       console.error("Error in callback_query:", error);
-//     }
-//   });
+        if (botDetails) {
+          // const messageBot = formatToken(botDetails);
+          await bot.sendMessage(chatId, "Please enter your token: \n");
+          const idToken = await prisma.token.create({
+            data: { botId: botDetails.id },
+          });
 
-//   bot.on("message", async (msg) => {
-//     try {
-//       const chatId = msg.chat.id;
-//       const text = msg.text;
+          bot.sessions[chatId] = { botId, tokenId: idToken.id };
+        } else {
+          await bot.sendMessage(chatId, "Bot not found.");
+        }
+      }
+    } catch (error) {
+      console.error("Error in callback_query:", error);
+    }
+  });
 
-//       if (bot.sessions[chatId] && bot.sessions[chatId].botId) {
-//         const { botId, tokenId } = bot.sessions[chatId];
+  bot.on("message", async (msg) => {
+    try {
+      const chatId = msg.chat.id;
+      const text = msg.text;
 
-//         if (!text.startsWith("/")) {
-//           const available = await prisma.token.findMany({
-//             where: { token: text },
-//           });
+      if (bot.sessions[chatId] && bot.sessions[chatId].botId) {
+        const { botId, tokenId } = bot.sessions[chatId];
 
-//           if (available.length > 0) {
-//             console.log("Token already exists");
-//           } else {
-//             await prisma.token.update({
-//               where: { id: tokenId },
-//               data: { token: text, telegramId: BigInt(chatId) },
-//             });
-//           }
+        if (!text.startsWith("/")) {
+          const available = await prisma.token.findMany({
+            where: { token: text },
+          });
 
-//           // Clear any tokens that are still null
-//           await prisma.token.deleteMany({ where: { token: null } });
+          if (available.length > 0) {
+            console.log("Token already exists");
+          } else {
+            await prisma.token.update({
+              where: { id: tokenId },
+              data: { token: text, telegramId: BigInt(chatId) },
+            });
+          }
 
-//           // Clear the session and send confirmation
-//           delete bot.sessions[chatId];
-//           await bot.sendMessage(chatId, "Token saved on database");
-//         } else {
-//           delete bot.sessions[chatId];
-//           await bot.sendMessage(chatId, "Please enter valid token");
-//         }
-//       } else {
-//         if (!text.startsWith("/add") && !text.startsWith("/start")) {
-//           await bot.sendMessage(chatId, "Please select a bot first.");
-//         }
-//       }
-//     } catch (error) {
-//       console.error("Error in message handler:", error);
-//     }
-//   });
-// };
+          // Clear any tokens that are still null
+          await prisma.token.deleteMany({ where: { token: null } });
+
+          // Clear the session and send confirmation
+          delete bot.sessions[chatId];
+          await bot.sendMessage(chatId, "Token saved on database");
+        } else {
+          delete bot.sessions[chatId];
+          await bot.sendMessage(chatId, "Please enter valid token");
+        }
+      }
+    } catch (error) {
+      console.error("Error in message handler:", error);
+    }
+  });
+};
