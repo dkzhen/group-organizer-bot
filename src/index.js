@@ -4,7 +4,7 @@ const bodyParser = require("body-parser");
 const { envPORT } = require("./config/env");
 const { StatusBotTelegram } = require("./commands/StatusBot");
 const router = require("./routes");
-const { listBot } = require("./commands/ListBot");
+// const { listBot } = require("./commands/ListBot");
 
 const app = express();
 const PORT = envPORT || 101;
@@ -16,6 +16,6 @@ app.use(router);
 
 app.listen(PORT, () => {
   StatusBotTelegram();
-  listBot();
+  // listBot();
   console.log(`Server running on port ${PORT}`);
 });
