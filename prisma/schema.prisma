@@ -14,9 +14,10 @@ datasource db {
 }
 
 model Bot {
-  id        String  @id
+  id        String   @id
   name      String
   tokenList Token[]
+  formats   format[]
 }
 
 model Token {
@@ -25,4 +26,11 @@ model Token {
   telegramId BigInt?
   botId      String?
   token      String? @db.Text
+}
+
+model format {
+  formatId Int     @id @default(autoincrement())
+  Bot      Bot?    @relation(fields: [botId], references: [id])
+  botId    String?
+  type     String?
 }
